@@ -1,4 +1,4 @@
-package com.ppm.slowclient.http;
+package com.ppm.http.client;
 
 import java.util.Map;
 
@@ -10,7 +10,12 @@ public class Response
 	private final Map<String, String> headers;
 	private final byte[] body;
 
-	public Response(String version, int responseCode, String responseCodeText, Map<String, String> headers, byte[] body)
+	Response()
+	{
+		this(null, 0, "Exception in Request", null, null);
+	}
+
+	Response(String version, int responseCode, String responseCodeText, Map<String, String> headers, byte[] body)
 	{
 		this.version = version;
 		this.responseCode = responseCode;

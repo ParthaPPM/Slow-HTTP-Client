@@ -1,4 +1,4 @@
-package com.ppm.slowclient.http;
+package com.ppm.http.client;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -11,6 +11,11 @@ public class Request
 	private final Map<String, String> parameters;
 	private final Map<String, String> headers;
 	private final byte[] body;
+
+	public Request()
+	{
+		this("GET");
+	}
 
 	public Request(String method)
 	{
