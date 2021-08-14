@@ -1,5 +1,6 @@
 package com.ppm.http.client;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 public class Response
@@ -61,5 +62,19 @@ public class Response
 	public byte[] getBody()
 	{
 		return body;
+	}
+
+	public String getText()
+	{
+		String responseText;
+		if(body == null)
+		{
+			responseText = null;
+		}
+		else
+		{
+			responseText = new String(body, StandardCharsets.UTF_8);
+		}
+		return responseText;
 	}
 }

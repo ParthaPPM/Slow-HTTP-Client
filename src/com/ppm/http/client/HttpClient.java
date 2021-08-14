@@ -9,18 +9,13 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
-public class HttpClient
+class HttpClient
 {
 	private final String HOST;
 	private final int PORT;
 	private Socket socket;
 	private Request request;
 	private boolean keepConnectionOpen;
-
-	public HttpClient(String host)
-	{
-		this(host, 80);
-	}
 
 	public HttpClient(String host, int port)
 	{
@@ -31,40 +26,29 @@ public class HttpClient
 		this.keepConnectionOpen = true;
 	}
 
-	public void createRequest()
+	public void createRequest(String method, String location, Map<String, String> parameters, Map<String, String> extraHeaders, byte[] body)
 	{
-		createRequest("GET");
-	}
-
-	public void createRequest(String method)
-	{
-		createRequest(method, "/");
-	}
-
-	public void createRequest(String method, String location)
-	{
-		createRequest(method, location, null);
-	}
-
-	public void createRequest(String method, String location, byte[] body)
-	{
-		createRequest(new Request(method, location, body));
-	}
-
-	public void createRequest(Request request)
-	{
-		this.request = request;
-		this.request.addHeader("Host", this.HOST);
+		Map<String, String> headers = new HashMap<>();
+		if(extraHeaders != null)
+		{
+			headers.putAll(extraHeaders);
+		}
+		headers.put("Host", this.HOST);
 		if(this.keepConnectionOpen)
 		{
-			this.request.addHeader("Connection", "keep-alive");
+			headers.put("Connection", "keep-alive");
 		}
 		else
 		{
-			this.request.addHeader("Connection", "close");
+			headers.put("Connection", "close");
 		}
-		this.request.addHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.131 Safari/537.36 Edg/92.0.902.67");
-		this.request.addHeader("Accept", "*/*");
+		headers.put("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.131 Safari/537.36 Edg/92.0.902.67");
+		if(!headers.containsKey("Accept"))
+		{
+			headers.put("Accept", "*/*");
+		}
+		this.request = new Request(method, location, parameters, headers, body);
+
 	}
 
 	public Response makeRequest()
@@ -196,38 +180,34 @@ public class HttpClient
 		socket = null;
 	}
 
-	private String getParametersAsString(Map<String, String> parametersMap)
+	private String getParametersAsString(Map<String, String> parametersMap) throws UnsupportedEncodingException
 	{
 		StringJoiner parameterString = new StringJoiner("&");
-		Set<String> keySet = parametersMap.keySet();
-		for(String key : keySet)
+		if(parametersMap != null)
 		{
-			try
+			Set<String> keySet = parametersMap.keySet();
+			for (String key : keySet)
 			{
 				String k = URLEncoder.encode(key, "UTF-8");
 				String v = URLEncoder.encode(parametersMap.get(key), "UTF-8");
 				parameterString.add(k + "=" + v);
 			}
-			catch (UnsupportedEncodingException e)
-			{
-				e.printStackTrace();
-			}
 		}
 		return parameterString.toString();
 	}
 
-	private String getRequestLine(String method, String location, Map<String, String> parametersMap, String version)
+	private String getRequestLine(String method, String location, Map<String, String> parametersMap, String version) throws UnsupportedEncodingException
 	{
 		String parametersAsString = getParametersAsString(parametersMap);
 		StringJoiner requestLine = new StringJoiner(" ");
 		requestLine.add(method);
 		if(parametersAsString.length() == 0)
 		{
-			requestLine.add(location + "?" + parametersAsString);
+			requestLine.add(location);
 		}
 		else
 		{
-			requestLine.add(location);
+			requestLine.add(location + "?" + parametersAsString);
 		}
 		requestLine.add(version);
 		return requestLine.toString();

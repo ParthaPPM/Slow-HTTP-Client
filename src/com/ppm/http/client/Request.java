@@ -3,7 +3,7 @@ package com.ppm.http.client;
 import java.util.HashMap;
 import java.util.Map;
 
-public class Request
+class Request
 {
 	private final String method;
 	private final String location;
@@ -12,82 +12,74 @@ public class Request
 	private final Map<String, String> headers;
 	private final byte[] body;
 
-	public Request()
-	{
-		this("GET");
-	}
-
-	public Request(String method)
-	{
-		this(method, "/");
-	}
-
-	public Request(String method, String location)
-	{
-		this(method, location, null);
-	}
-
-	public Request(String method, String location, byte[] body)
+	Request(String method, String location, Map<String, String> parameters, Map<String, String> headers, byte[] body)
 	{
 		this.method = method.toUpperCase();
 		this.location = location;
 		this.version = "HTTP/1.1";
-		this.parameters = new HashMap<>();
+		if(parameters != null)
+		{
+			if(parameters.size() == 0)
+			{
+				this.parameters = null;
+			}
+			else
+			{
+				this.parameters = parameters;
+			}
+		}
+		else
+		{
+			this.parameters = null;
+		}
 		this.headers = new HashMap<>();
+		this.headers.putAll(headers);
 		if(body != null)
 		{
 			if(body.length != 0)
 			{
 				this.body = body;
-				headers.put("Content-Length", String.valueOf(body.length));
+				this.headers.put("Content-Length", String.valueOf(body.length));
 			}
 			else
 			{
 				this.body = null;
+				this.headers.put("Content-Length", "0");
 			}
 		}
 		else
 		{
 			this.body = null;
+			this.headers.put("Content-Length", "0");
 		}
 	}
 
-	public void addParameter(String key, String value)
-	{
-		parameters.put(key, value);
-	}
-
-	public void addHeader(String key, String value)
-	{
-		headers.put(key, value);
-	}
-
-	public String getMethod()
+	String getMethod()
 	{
 		return method;
 	}
 
-	public String getLocation()
+	String getLocation()
 	{
 		return location;
 	}
 
-	public String getVersion()
+	String getVersion()
 	{
 		return version;
 	}
 
-	public Map<String, String> getParameters()
+	Map<String, String> getParameters()
 	{
 		return parameters;
 	}
 
-	public Map<String, String> getHeaders()
+	Map<String, String> getHeaders()
 	{
 		return headers;
 	}
 
-	public byte[] getBody()
+	byte[] getBody()
 	{
 		return body;
 	}
