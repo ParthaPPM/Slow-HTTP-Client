@@ -7,7 +7,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
-public class HttpClientHelper
+public class SimpleClient
 {
 	public static Response get(String url)
 	{
@@ -88,7 +88,15 @@ public class HttpClientHelper
 			// making the request
 			if(protocol.equals("http"))
 			{
-				HttpClient client = new HttpClient(host, port);
+				Client client = new HttpClient(host, port);
+				client.createRequest(requestMethod, path, parametersMap, extraHeaders, body);
+				Response response = client.makeRequest();
+				client.close();
+				return response;
+			}
+			else if(protocol.equals("https"))
+			{
+				Client client = new HttpsClient(host, port);
 				client.createRequest(requestMethod, path, parametersMap, extraHeaders, body);
 				Response response = client.makeRequest();
 				client.close();
@@ -96,7 +104,7 @@ public class HttpClientHelper
 			}
 			else
 			{
-				System.out.println("HTTPS not supported yet.");
+				System.out.println(protocol + " not supported.");
 				return new Response();
 			}
 		}
