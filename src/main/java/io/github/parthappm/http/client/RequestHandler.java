@@ -1,4 +1,4 @@
-package com.ppm.http.client;
+package io.github.parthappm.http.client;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -173,7 +173,7 @@ class RequestHandler
 		socket = null;
 	}
 
-	private String getParametersAsString(Map<String, String> parametersMap) throws UnsupportedEncodingException
+	private String getParametersAsString(Map<String, String> parametersMap)
 	{
 		StringJoiner parameterString = new StringJoiner("&");
 		if(parametersMap != null)
@@ -181,8 +181,8 @@ class RequestHandler
 			Set<String> keySet = parametersMap.keySet();
 			for (String key : keySet)
 			{
-				String k = URLEncoder.encode(key, "UTF-8");
-				String v = URLEncoder.encode(parametersMap.get(key), "UTF-8");
+				String k = URLEncoder.encode(key, StandardCharsets.UTF_8);
+				String v = URLEncoder.encode(parametersMap.get(key), StandardCharsets.UTF_8);
 				parameterString.add(k + "=" + v);
 			}
 		}

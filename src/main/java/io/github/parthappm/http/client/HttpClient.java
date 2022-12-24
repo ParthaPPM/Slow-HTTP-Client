@@ -1,33 +1,28 @@
-package com.ppm.http.client;
+package io.github.parthappm.http.client;
 
-import javax.net.SocketFactory;
-import javax.net.ssl.SSLSocket;
-import javax.net.ssl.SSLSocketFactory;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.Map;
 
-class HttpsClient implements Client
+class HttpClient implements Client
 {
 	private RequestHandler requestHandler;
 
-	HttpsClient(String host)
+	HttpClient(String host)
 	{
-		this(host, 443);
+		this(host, 433);
 	}
 
-	HttpsClient(String host, int port)
+	HttpClient(String host, int port)
 	{
 		this(host, port, true);
 	}
 
-	HttpsClient(String host, int port, boolean keepConnectionOpen)
+	HttpClient(String host, int port, boolean keepConnectionOpen)
 	{
 		try
 		{
-			SocketFactory socketFactory = SSLSocketFactory.getDefault();
-			Socket socket = socketFactory.createSocket(host, port);
-			((SSLSocket)socket).startHandshake();
+			Socket socket = new Socket(host, port);
 			requestHandler = new RequestHandler(host, socket, keepConnectionOpen);
 		}
 		catch (IOException e)

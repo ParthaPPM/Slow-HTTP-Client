@@ -1,6 +1,5 @@
-package com.ppm.http.client;
+package io.github.parthappm.http.client;
 
-import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
@@ -141,16 +140,9 @@ public class SimpleClient
 			Set<String> keySet = parametersMap.keySet();
 			for (String key : keySet)
 			{
-				try
-				{
-					String k = URLEncoder.encode(key, "UTF-8");
-					String v = URLEncoder.encode(parametersMap.get(key), "UTF-8");
-					parameterString.add(k + "=" + v);
-				}
-				catch (UnsupportedEncodingException e)
-				{
-					e.printStackTrace();
-				}
+				String k = URLEncoder.encode(key, StandardCharsets.UTF_8);
+				String v = URLEncoder.encode(parametersMap.get(key), StandardCharsets.UTF_8);
+				parameterString.add(k + "=" + v);
 			}
 		}
 		return parameterString.toString();

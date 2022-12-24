@@ -1,5 +1,8 @@
-# Project exclude paths
-/.idea/
-/META-INF/
-/out/
-/Simple HTTP Client.iml
+.gradle
+.idea
+build/
+
+!gradle-wrapper.jar
+!gradle-wrapper.properties
+gradlew
+gradlew.*

@@ -1,4 +1,4 @@
-package com.ppm.http.client;
+package io.github.parthappm.http.client;
 
 import java.util.Map;
 
