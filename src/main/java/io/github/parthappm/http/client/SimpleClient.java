@@ -88,16 +88,24 @@ public class SimpleClient
 			if(protocol.equals("http"))
 			{
 				Client client = new HttpClient(host, port);
-				client.createRequest(requestMethod, path, parametersMap, extraHeaders, body);
-				Response response = client.makeRequest();
+				client.setMethod(requestMethod);
+				client.setPath(path);
+				client.setParameters(parametersMap);
+				client.setHeader(extraHeaders);
+				client.setBody(body);
+				Response response = client.request();
 				client.close();
 				return response;
 			}
 			else if(protocol.equals("https"))
 			{
 				Client client = new HttpsClient(host, port);
-				client.createRequest(requestMethod, path, parametersMap, extraHeaders, body);
-				Response response = client.makeRequest();
+				client.setMethod(requestMethod);
+				client.setPath(path);
+				client.setParameters(parametersMap);
+				client.setHeader(extraHeaders);
+				client.setBody(body);
+				Response response = client.request();
 				client.close();
 				return response;
 			}
