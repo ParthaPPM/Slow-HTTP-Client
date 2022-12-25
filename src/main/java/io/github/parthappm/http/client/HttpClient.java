@@ -3,19 +3,14 @@ package io.github.parthappm.http.client;
 import java.io.IOException;
 import java.net.Socket;
 
-class HttpClient extends Client
+public class HttpClient extends Client
 {
-	HttpClient(String host)
+	public HttpClient(String host)
 	{
 		this(host, 80);
 	}
 
-	HttpClient(String host, int port)
-	{
-		this(host, port, false);
-	}
-
-	HttpClient(String host, int port, boolean keepConnectionOpen)
+	public HttpClient(String host, int port)
 	{
 		try
 		{

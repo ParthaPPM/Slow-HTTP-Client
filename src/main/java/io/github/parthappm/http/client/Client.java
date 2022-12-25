@@ -3,15 +3,17 @@ package io.github.parthappm.http.client;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
 import java.net.Socket;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.StringJoiner;
 
 public class Client
 {
-	protected Socket socket;
+	private Socket socket;
 	private boolean keepConnectionOpen; // redirect is not implemented
 	private boolean followRedirect; // redirect is not implemented
 	private String method;
@@ -197,7 +199,7 @@ public class Client
 		return temp.toString().trim();
 	}
 
-	private String getRequestLine() throws UnsupportedEncodingException
+	private String getRequestLine()
 	{
 		String parametersAsString = getParametersAsString();
 		StringJoiner requestLine = new StringJoiner(" ");

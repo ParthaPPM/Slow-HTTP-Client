@@ -6,19 +6,14 @@ import javax.net.ssl.SSLSocketFactory;
 import java.io.IOException;
 import java.net.Socket;
 
-class HttpsClient extends Client
+public class HttpsClient extends Client
 {
-	HttpsClient(String host)
+	public HttpsClient(String host)
 	{
 		this(host, 443);
 	}
 
-	HttpsClient(String host, int port)
-	{
-		this(host, port, false);
-	}
-
-	HttpsClient(String host, int port, boolean keepConnectionOpen)
+	public HttpsClient(String host, int port)
 	{
 		try
 		{
@@ -26,7 +21,8 @@ class HttpsClient extends Client
 			Socket socket = socketFactory.createSocket(host, port);
 			((SSLSocket) socket).startHandshake();
 			setSocket(socket);
-		} catch (IOException e)
+		}
+		catch (IOException e)
 		{
 			e.printStackTrace();
 		}
