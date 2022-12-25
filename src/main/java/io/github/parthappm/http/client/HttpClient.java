@@ -7,12 +7,12 @@ class HttpClient extends Client
 {
 	HttpClient(String host)
 	{
-		this(host, 433);
+		this(host, 80);
 	}
 
 	HttpClient(String host, int port)
 	{
-		this(host, port, true);
+		this(host, port, false);
 	}
 
 	HttpClient(String host, int port, boolean keepConnectionOpen)

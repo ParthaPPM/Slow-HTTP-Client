@@ -15,7 +15,7 @@ class HttpsClient extends Client
 
 	HttpsClient(String host, int port)
 	{
-		this(host, port, true);
+		this(host, port, false);
 	}
 
 	HttpsClient(String host, int port, boolean keepConnectionOpen)
