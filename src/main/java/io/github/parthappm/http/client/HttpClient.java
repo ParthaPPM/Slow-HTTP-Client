@@ -2,12 +2,9 @@ package io.github.parthappm.http.client;
 
 import java.io.IOException;
 import java.net.Socket;
-import java.util.Map;
 
-class HttpClient implements Client
+class HttpClient extends Client
 {
-	private RequestHandler requestHandler;
-
 	HttpClient(String host)
 	{
 		this(host, 433);
@@ -22,27 +19,11 @@ class HttpClient implements Client
 	{
 		try
 		{
-			Socket socket = new Socket(host, port);
-			requestHandler = new RequestHandler(host, socket, keepConnectionOpen);
+			setSocket(new Socket(host, port), keepConnectionOpen);
 		}
 		catch (IOException e)
 		{
 			e.printStackTrace();
 		}
-	}
-
-	public void createRequest(String method, String location, Map<String, String> parameters, Map<String, String> extraHeaders, byte[] body)
-	{
-		requestHandler.createRequest(method, location, parameters, extraHeaders, body);
-	}
-
-	public Response makeRequest()
-	{
-		return requestHandler.makeRequest();
-	}
-
-	public void close()
-	{
-		requestHandler.close();
 	}
 }

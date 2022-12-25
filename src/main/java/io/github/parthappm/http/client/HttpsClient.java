@@ -5,12 +5,9 @@ import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 import java.io.IOException;
 import java.net.Socket;
-import java.util.Map;
 
-class HttpsClient implements Client
+class HttpsClient extends Client
 {
-	private RequestHandler requestHandler;
-
 	HttpsClient(String host)
 	{
 		this(host, 443);
@@ -27,27 +24,11 @@ class HttpsClient implements Client
 		{
 			SocketFactory socketFactory = SSLSocketFactory.getDefault();
 			Socket socket = socketFactory.createSocket(host, port);
-			((SSLSocket)socket).startHandshake();
-			requestHandler = new RequestHandler(host, socket, keepConnectionOpen);
-		}
-		catch (IOException e)
+			((SSLSocket) socket).startHandshake();
+			setSocket(socket, keepConnectionOpen);
+		} catch (IOException e)
 		{
 			e.printStackTrace();
 		}
-	}
-
-	public void createRequest(String method, String location, Map<String, String> parameters, Map<String, String> extraHeaders, byte[] body)
-	{
-		requestHandler.createRequest(method, location, parameters, extraHeaders, body);
-	}
-
-	public Response makeRequest()
-	{
-		return requestHandler.makeRequest();
-	}
-
-	public void close()
-	{
-		requestHandler.close();
 	}
 }
