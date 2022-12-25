@@ -6,8 +6,8 @@ import java.util.Map;
 public class Response
 {
 	private final String version;
-	private final int responseCode;
-	private final String responseCodeText;
+	private final int statusCode;
+	private final String statusText;
 	private final Map<String, String> headers;
 	private final byte[] body;
 
@@ -16,27 +16,13 @@ public class Response
 		this(null, 0, "Exception in Request", null, null);
 	}
 
-	Response(String version, int responseCode, String responseCodeText, Map<String, String> headers, byte[] body)
+	Response(String version, int statusCode, String statusText, Map<String, String> headers, byte[] body)
 	{
 		this.version = version;
-		this.responseCode = responseCode;
-		this.responseCodeText = responseCodeText;
+		this.statusCode = statusCode;
+		this.statusText = statusText;
 		this.headers = headers;
-		if(body != null)
-		{
-			if(body.length != 0)
-			{
-				this.body = body;
-			}
-			else
-			{
-				this.body = null;
-			}
-		}
-		else
-		{
-			this.body = null;
-		}
+		this.body = body;
 	}
 
 	public String getVersion()
@@ -44,14 +30,14 @@ public class Response
 		return version;
 	}
 
-	public int getResponseCode()
+	public int getStatusCode()
 	{
-		return responseCode;
+		return statusCode;
 	}
 
-	public String getResponseCodeText()
+	public String getStatusText()
 	{
-		return responseCodeText;
+		return statusText;
 	}
 
 	public Map<String, String> getHeaders()
@@ -66,15 +52,6 @@ public class Response
 
 	public String getText()
 	{
-		String responseText;
-		if(body == null)
-		{
-			responseText = null;
-		}
-		else
-		{
-			responseText = new String(body, StandardCharsets.UTF_8);
-		}
-		return responseText;
+		return new String(body, StandardCharsets.UTF_8);
 	}
 }

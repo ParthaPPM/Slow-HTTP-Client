@@ -25,7 +25,7 @@ class HttpsClient extends Client
 			SocketFactory socketFactory = SSLSocketFactory.getDefault();
 			Socket socket = socketFactory.createSocket(host, port);
 			((SSLSocket) socket).startHandshake();
-			setSocket(socket, keepConnectionOpen);
+			setSocket(socket);
 		} catch (IOException e)
 		{
 			e.printStackTrace();

@@ -19,7 +19,7 @@ class HttpClient extends Client
 	{
 		try
 		{
-			setSocket(new Socket(host, port), keepConnectionOpen);
+			setSocket(new Socket(host, port));
 		}
 		catch (IOException e)
 		{

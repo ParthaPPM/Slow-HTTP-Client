@@ -1,6 +1,6 @@
 package io.github.parthappm.http.client;
 
-import java.net.MalformedURLException;
+import java.io.IOException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -115,7 +115,7 @@ public class SimpleClient
 				return new Response();
 			}
 		}
-		catch (MalformedURLException e)
+		catch (IOException e)
 		{
 			return new Response();
 		}

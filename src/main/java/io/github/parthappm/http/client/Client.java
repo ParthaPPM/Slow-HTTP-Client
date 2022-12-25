@@ -12,7 +12,8 @@ import java.util.*;
 public class Client
 {
 	protected Socket socket;
-	private boolean keepConnectionOpen;
+	private boolean keepConnectionOpen; // redirect is not implemented
+	private boolean followRedirect; // redirect is not implemented
 	private String method;
 	private String path;
 	private final Map<String, String> parameters;
@@ -21,6 +22,8 @@ public class Client
 
 	Client()
 	{
+		this.keepConnectionOpen = false;
+		this.followRedirect = false;
 		this.method = "GET";
 		this.path = "/";
 		this.parameters = new HashMap<>();
@@ -28,169 +31,170 @@ public class Client
 		this.body = new byte[0];
 	}
 
-	protected void setSocket(Socket socket, boolean keepConnectionOpen)
+	protected void setSocket(Socket socket)
 	{
 		this.socket = socket;
-		this.keepConnectionOpen = keepConnectionOpen;
 	}
 
-	public void setMethod(String method)
+	public Client keepConnectionOpen(boolean keepConnectionOpen)
+	{
+		this.keepConnectionOpen = keepConnectionOpen;
+		return this;
+	}
+
+	public Client followRedirect(boolean followRedirect)
+	{
+		this.followRedirect = followRedirect;
+		return this;
+	}
+
+	public Client setMethod(String method)
 	{
 		this.method = method;
+		return this;
 	}
 
-	public void setPath(String path)
+	public Client setPath(String path)
 	{
 		this.path = path;
+		return this;
 	}
 
-	public void setParameters(Map<String, String> parameters)
+	public Client setParameters(Map<String, String> parameters)
 	{
 		if (parameters != null)
 		{
 			this.parameters.putAll(parameters);
 		}
+		return this;
 	}
 
-	public void setHeader(Map<String, String> headers)
+	public Client setHeader(Map<String, String> headers)
 	{
 		if (headers != null)
 		{
 			this.headers.putAll(headers);
 		}
+		return this;
 	}
 
-	public void setBody(byte[] body)
+	public Client setBody(byte[] body)
 	{
 		if (body != null)
 		{
 			this.body = body;
 		}
+		return this;
 	}
 
-	public Response request()
+	public Response request() throws IOException
 	{
+		// setting some string values
+		String LINE_SEPARATOR = "\r\n";
+		String CONTENT_LENGTH = "Content-Length";
+		String CONNECTION = "Connection";
+		String CONNECTION_KEEP_ALIVE = "keep-alive";
+		String CONNECTION_CLOSE = "close";
+		String CONNECTION_CLOSE_RESPONSE = "Closed";
+		String USER_AGENT = "User-Agent";
+		String userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.131 Safari/537.36 Edg/92.0.902.67";
+
 		// building the headers
-		headers.put("Connection", keepConnectionOpen ? "keep-alive" : "close");
-		headers.put("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.131 Safari/537.36 Edg/92.0.902.67");
+		headers.put(CONTENT_LENGTH, String.valueOf(body.length));
+		headers.put("Connection", keepConnectionOpen ? CONNECTION_KEEP_ALIVE : CONNECTION_CLOSE);
+		headers.put(USER_AGENT, userAgent);
 
 		// sending and receiving the data
-		try
+		OutputStream os = socket.getOutputStream();
+		InputStream is = socket.getInputStream();
+
+		// sending the request line
+		String requestLine = getRequestLine();
+		os.write((requestLine + LINE_SEPARATOR).getBytes(StandardCharsets.UTF_8));
+
+		//sending the headers
+		for (String key : headers.keySet())
 		{
-			OutputStream os = socket.getOutputStream();
-			InputStream is = socket.getInputStream();
+			String line = key + ": " + headers.get(key) + LINE_SEPARATOR;
+			os.write(line.getBytes(StandardCharsets.UTF_8));
+		}
+		os.write(LINE_SEPARATOR.getBytes(StandardCharsets.UTF_8));
 
-			String lineSeparator = "\r\n";
-			String requestLine = getRequestLine();
+		// sending the body
+		os.write(body);
 
-			// sending the request line
-			os.write((requestLine + lineSeparator).getBytes(StandardCharsets.UTF_8));
+		// reading the response status line
+		String version = readInputStream(is, ' ');
+		int statusCode = Integer.parseInt(readInputStream(is, ' '));
+		String statusText = readInputStream(is, '\n');
 
-			//sending the headers
-			for (String key : headers.keySet())
+		// reading the response headers
+		Map<String, String> responseHeaders = new HashMap<>();
+		do
+		{
+			String header = readInputStream(is, '\n');
+			if (header.equals(""))
 			{
-				String line = key + ": " + headers.get(key) + lineSeparator;
-				os.write(line.getBytes(StandardCharsets.UTF_8));
-			}
-			os.write(lineSeparator.getBytes(StandardCharsets.UTF_8));
-
-			// sending the body
-			os.write(body);
-
-			StringBuilder line = new StringBuilder();
-			boolean isStatusLine = true;
-			String version = null;
-			int responseCode = 0;
-			String responseCodeText = null;
-			Map<String, String> responseHeadersMap = new HashMap<>();
-			int bytesToRead = 0;
-			byte[] responseBody;
-			//reading the response header byte by byte
-			while (true)
-			{
-				int b = is.read();
-				if(b != '\r')
-				{
-					line.append((char) b);
-				}
-				else
-				{
-					is.read();
-					String l = line.toString();
-					if(l.equals(""))
-					{
-						break;
-					}
-					if(isStatusLine)
-					{
-						isStatusLine = false;
-						Scanner sc = new Scanner(l);
-						version = sc.next();
-						responseCode = sc.nextInt();
-						responseCodeText = sc.nextLine().trim();
-					}
-					else
-					{
-						int colonIndexPos = l.indexOf(':');
-						String key = l.substring(0, colonIndexPos).trim();
-						String value = l.substring(colonIndexPos + 1).trim();
-						responseHeadersMap.put(key, value);
-						if(key.equals("Content-Length"))
-						{
-							bytesToRead = Integer.parseInt(value);
-						}
-						if(key.equals("Connection"))
-						{
-							if(value.equalsIgnoreCase("Closed"))
-							{
-								keepConnectionOpen = false;
-							}
-						}
-					}
-					line = new StringBuilder();
-				}
-			}
-
-			//reading the body
-			if(bytesToRead > 0)
-			{
-				responseBody = new byte[bytesToRead];
-				is.read(responseBody, 0, bytesToRead);
+				break;
 			}
 			else
 			{
-				responseBody = null;
+				int colonIndex = header.indexOf(':');
+				String key = header.substring(0, colonIndex).trim();
+				String value = header.substring(colonIndex + 1).trim();
+				responseHeaders.put(key, value);
 			}
+		} while (true);
 
-			if(!keepConnectionOpen)
-			{
-				close();
-			}
-
-			return new Response(version, responseCode, responseCodeText, responseHeadersMap, responseBody);
-		}
-		catch (IOException e)
+		// reading the response body
+		byte[] responseBody;
+		int bytesRead;
+		String contentLength = responseHeaders.get(CONTENT_LENGTH);
+		if (contentLength != null)
 		{
-			e.printStackTrace();
-			close();
-			return new Response();
+			int responseContentLength = Integer.parseInt(contentLength);
+			responseBody = new byte[responseContentLength];
+			bytesRead = is.read(responseBody, 0, responseContentLength);
 		}
+		else
+		{
+			responseBody = new byte[0];
+			bytesRead = 0;
+		}
+
+		// reading the connection information
+		String connection = responseHeaders.get(CONNECTION);
+		if (connection != null && connection.equalsIgnoreCase(CONNECTION_CLOSE_RESPONSE))
+		{
+			keepConnectionOpen = false;
+		}
+		close();
+
+		return new Response(version, statusCode, statusText, responseHeaders, Arrays.copyOfRange(responseBody, 0, bytesRead));
 	}
 
-	public void close()
+	public void close() throws IOException
 	{
-		try
+		if(socket!=null)
 		{
-			if(socket!=null)
-			{
-				socket.close();
-			}
-		}
-		catch (IOException e)
-		{
-			e.printStackTrace();
+			socket.close();
 		}
 		socket = null;
+	}
+
+	private String readInputStream(InputStream is, char endChar) throws IOException
+	{
+		StringBuilder temp = new StringBuilder();
+		do
+		{
+			int b = is.read();
+			temp.append((char) b);
+			if (b == endChar)
+			{
+				break;
+			}
+		} while (true);
+		return temp.toString().trim();
 	}
 
 	private String getRequestLine() throws UnsupportedEncodingException
