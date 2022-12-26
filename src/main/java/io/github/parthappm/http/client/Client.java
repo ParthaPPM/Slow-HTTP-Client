@@ -13,6 +13,7 @@ import java.util.StringJoiner;
 
 public class Client
 {
+	private boolean suppressException;
 	private Socket socket;
 	private boolean keepConnectionOpen; // redirect is not implemented
 	private boolean followRedirect; // redirect is not implemented
@@ -24,6 +25,7 @@ public class Client
 
 	Client()
 	{
+		this.suppressException = true;
 		this.keepConnectionOpen = false;
 		this.followRedirect = false;
 		this.method = "GET";
@@ -36,6 +38,12 @@ public class Client
 	protected void setSocket(Socket socket)
 	{
 		this.socket = socket;
+	}
+
+	public Client suppressException(boolean suppressException)
+	{
+		this.suppressException = suppressException;
+		return this;
 	}
 
 	public Client keepConnectionOpen(boolean keepConnectionOpen)
@@ -52,13 +60,28 @@ public class Client
 
 	public Client setMethod(String method)
 	{
-		this.method = method;
+		if (method != null)
+		{
+			this.method = method.toUpperCase();
+		}
 		return this;
 	}
 
 	public Client setPath(String path)
 	{
-		this.path = path;
+		if (path != null && !path.equals(""))
+		{
+			this.path = path;
+		}
+		return this;
+	}
+
+	public Client addParameter(String key, String value)
+	{
+		if (key != null)
+		{
+			parameters.put(key, value);
+		}
 		return this;
 	}
 
@@ -67,6 +90,15 @@ public class Client
 		if (parameters != null)
 		{
 			this.parameters.putAll(parameters);
+		}
+		return this;
+	}
+
+	public Client addHeader(String key, String value)
+	{
+		if (key != null)
+		{
+			headers.put(key, value);
 		}
 		return this;
 	}
@@ -106,73 +138,88 @@ public class Client
 		headers.put("Connection", keepConnectionOpen ? CONNECTION_KEEP_ALIVE : CONNECTION_CLOSE);
 		headers.put(USER_AGENT, userAgent);
 
-		// sending and receiving the data
-		OutputStream os = socket.getOutputStream();
-		InputStream is = socket.getInputStream();
-
-		// sending the request line
-		String requestLine = getRequestLine();
-		os.write((requestLine + LINE_SEPARATOR).getBytes(StandardCharsets.UTF_8));
-
-		//sending the headers
-		for (String key : headers.keySet())
+		try
 		{
-			String line = key + ": " + headers.get(key) + LINE_SEPARATOR;
-			os.write(line.getBytes(StandardCharsets.UTF_8));
-		}
-		os.write(LINE_SEPARATOR.getBytes(StandardCharsets.UTF_8));
+			// sending and receiving the data
+			OutputStream os = socket.getOutputStream();
+			InputStream is = socket.getInputStream();
 
-		// sending the body
-		os.write(body);
+			// sending the request line
+			String requestLine = getRequestLine();
+			os.write((requestLine + LINE_SEPARATOR).getBytes(StandardCharsets.UTF_8));
 
-		// reading the response status line
-		String version = readInputStream(is, ' ');
-		int statusCode = Integer.parseInt(readInputStream(is, ' '));
-		String statusText = readInputStream(is, '\n');
-
-		// reading the response headers
-		Map<String, String> responseHeaders = new HashMap<>();
-		do
-		{
-			String header = readInputStream(is, '\n');
-			if (header.equals(""))
+			//sending the headers
+			for (String key : headers.keySet())
 			{
-				break;
+				String value = headers.get(key);
+				String line = key + ": " + (value == null ? "" : value) + LINE_SEPARATOR;
+				os.write(line.getBytes(StandardCharsets.UTF_8));
+			}
+			os.write(LINE_SEPARATOR.getBytes(StandardCharsets.UTF_8));
+
+			// sending the body
+			os.write(body);
+
+			// reading the response status line
+			String version = readInputStream(is, ' ');
+			int statusCode = Integer.parseInt(readInputStream(is, ' '));
+			String statusText = readInputStream(is, '\n');
+
+			// reading the response headers
+			Map<String, String> responseHeaders = new HashMap<>();
+			do
+			{
+				String header = readInputStream(is, '\n');
+				if (header.equals(""))
+				{
+					break;
+				}
+				else
+				{
+					int colonIndex = header.indexOf(':');
+					String key = header.substring(0, colonIndex).trim();
+					String value = header.substring(colonIndex + 1).trim();
+					responseHeaders.put(key, value);
+				}
+			} while (true);
+
+			// reading the response body
+			byte[] responseBody;
+			int bytesRead;
+			String contentLength = responseHeaders.get(CONTENT_LENGTH);
+			if (contentLength != null)
+			{
+				int responseContentLength = Integer.parseInt(contentLength);
+				responseBody = new byte[responseContentLength];
+				bytesRead = is.read(responseBody, 0, responseContentLength);
 			}
 			else
 			{
-				int colonIndex = header.indexOf(':');
-				String key = header.substring(0, colonIndex).trim();
-				String value = header.substring(colonIndex + 1).trim();
-				responseHeaders.put(key, value);
+				responseBody = new byte[0];
+				bytesRead = 0;
 			}
-		} while (true);
 
-		// reading the response body
-		byte[] responseBody;
-		int bytesRead;
-		String contentLength = responseHeaders.get(CONTENT_LENGTH);
-		if (contentLength != null)
-		{
-			int responseContentLength = Integer.parseInt(contentLength);
-			responseBody = new byte[responseContentLength];
-			bytesRead = is.read(responseBody, 0, responseContentLength);
-		}
-		else
-		{
-			responseBody = new byte[0];
-			bytesRead = 0;
-		}
+			// reading the connection information
+			String connection = responseHeaders.get(CONNECTION);
+			if (connection != null && connection.equalsIgnoreCase(CONNECTION_CLOSE_RESPONSE))
+			{
+				keepConnectionOpen = false;
+			}
+			close();
 
-		// reading the connection information
-		String connection = responseHeaders.get(CONNECTION);
-		if (connection != null && connection.equalsIgnoreCase(CONNECTION_CLOSE_RESPONSE))
-		{
-			keepConnectionOpen = false;
+			return new Response(version, statusCode, statusText, responseHeaders, Arrays.copyOfRange(responseBody, 0, bytesRead));
 		}
-		close();
-
-		return new Response(version, statusCode, statusText, responseHeaders, Arrays.copyOfRange(responseBody, 0, bytesRead));
+		catch (Exception e)
+		{
+			if (!suppressException)
+			{
+				throw e;
+			}
+			else
+			{
+				return new Response();
+			}
+		}
 	}
 
 	public void close() throws IOException
@@ -212,10 +259,11 @@ public class Client
 	private String getParametersAsString()
 	{
 		StringJoiner parameterString = new StringJoiner("&");
-		for (String key : this.parameters.keySet())
+		for (String key : parameters.keySet())
 		{
+			String value = parameters.get(key);
 			String k = URLEncoder.encode(key, StandardCharsets.UTF_8);
-			String v = URLEncoder.encode(this.parameters.get(key), StandardCharsets.UTF_8);
+			String v = value == null ? "" : URLEncoder.encode(value, StandardCharsets.UTF_8);
 			parameterString.add(k + "=" + v);
 		}
 		return parameterString.toString();
