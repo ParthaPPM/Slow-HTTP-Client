@@ -1,2 +1,2 @@
-rootProject.name = 'test-gradle'
+rootProject.name = 'http-client'
 include('lib')
