@@ -1,9 +1,12 @@
 plugins {
     id 'java-library'
+    id 'maven-publish'
+    id 'signing'
 }
 
-group 'io.github.parthappm'
-version '1.0.0'
+group = 'io.github.parthappm'
+version = '1.0.0'
+archivesBaseName = "${rootProject.name}"
 
 repositories {
     mavenCentral()
@@ -13,4 +16,65 @@ dependencies {
 }
 
 test {
+}
+
+java {
+    withJavadocJar()
+    withSourcesJar()
+}
+
+publishing {
+    publications {
+        maven (MavenPublication) {
+            groupId = "${group}"
+            artifactId = "${rootProject.name}"
+            version = "${version}"
+            from components.java
+
+            pom {
+                name = "${group}:${rootProject.name}"
+                description = "A HTTP client implementation that can be used as a dependency in another project"
+                url = "https://github.com/ParthaPPM/http-client"
+                licenses {
+                    license {
+                        name = "GNU General Public License v3.0"
+                        url = "https://www.gnu.org/licenses/gpl-3.0.en.html"
+                    }
+                }
+                developers {
+                    developer {
+                        id = "ParthaPPM"
+                        name = "Partha Pratim Manna"
+                        email = "partha_pratim_manna@yahoo.in"
+                    }
+                }
+                scm {
+                    connection = "scm:git:git://github.com/ParthaPPM/http-client.git"
+                    developerConnection = "scm:git:ssh://github.com:ParthaPPM/http-client.git"
+                    url = "https://github.com/ParthaPPM/http-client"
+                }
+            }
+        }
+    }
+    repositories {
+        maven {
+            name = "OSSRH"
+            url = uri("${buildDir}/publishing-repository")
+//            url = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
+//            credentials {
+//                username = "${ossrhUsername}"
+//                password = "${ossrhPassword}"
+//            }
+        }
+    }
+}
+
+signing {
+    sign publishing.publications.maven
+}
+
+javadoc {
+    if (JavaVersion.current().isJava9Compatible()) {
+        options.addBooleanOption("html5", true)
+    }
 }
