@@ -110,7 +110,7 @@ public class Client
 	}
 
 	/**
-	 * Setter method to add or modify a single parameter to the existing list of parameters.
+	 * Setter method to add or modify a single parameter to the existing list of parameters. To delete a parameter, set the value to null.
 	 * @param key The parameter key
 	 * @param value The parameter value
 	 * @return The reference of the current object for chaining
@@ -125,7 +125,7 @@ public class Client
 	}
 
 	/**
-	 * Setter method to add or modify multiple parameters to the existing list of parameters.
+	 * Setter method to add or modify multiple parameters to the existing list of parameters. To delete a parameter, set the value to null.
 	 * @param parameters The map of new or extra parameters that are to be added to the existing list of parameters
 	 * @return The reference of the current object for chaining
 	 */
@@ -139,7 +139,7 @@ public class Client
 	}
 
 	/**
-	 * Setter method to add or modify a single header to the existing list of headers.
+	 * Setter method to add or modify a single header to the existing list of headers. To delete a header, set the value to null.
 	 * @param key The header name
 	 * @param value The header value
 	 * @return The reference of the current object for chaining
@@ -154,7 +154,7 @@ public class Client
 	}
 
 	/**
-	 * Setter method add or modify multiple headers to the existing list of parameters.
+	 * Setter method add or modify multiple headers to the existing list of parameters. To delete a parameter, set the value to null.
 	 * @param headers The map of new or extra headers that are to be added to the existing list of headers
 	 * @return The reference of the current object for chaining
 	 */
@@ -216,9 +216,15 @@ public class Client
 			//sending the headers
 			for (String key : headers.keySet())
 			{
-				String value = headers.get(key);
-				String line = key + ": " + (value == null ? "" : value) + LINE_SEPARATOR;
-				os.write(line.getBytes(StandardCharsets.UTF_8));
+				if (key != null)
+				{
+					String value = headers.get(key);
+					if (value != null)
+					{
+						String line = key + ": " + value + LINE_SEPARATOR;
+						os.write(line.getBytes(StandardCharsets.UTF_8));
+					}
+				}
 			}
 			os.write(LINE_SEPARATOR.getBytes(StandardCharsets.UTF_8));
 
@@ -330,10 +336,16 @@ public class Client
 		StringJoiner parameterString = new StringJoiner("&");
 		for (String key : parameters.keySet())
 		{
-			String value = parameters.get(key);
-			String k = URLEncoder.encode(key, StandardCharsets.UTF_8);
-			String v = value == null ? "" : URLEncoder.encode(value, StandardCharsets.UTF_8);
-			parameterString.add(k + "=" + v);
+			if (key != null)
+			{
+				String value = parameters.get(key);
+				if (value != null)
+				{
+					String k = URLEncoder.encode(key, StandardCharsets.UTF_8);
+					String v = URLEncoder.encode(value, StandardCharsets.UTF_8);
+					parameterString.add(k + "=" + v);
+				}
+			}
 		}
 		return parameterString.toString();
 	}
