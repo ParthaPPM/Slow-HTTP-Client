@@ -11,12 +11,16 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.StringJoiner;
 
+/**
+ * A client class to implement the HTTP client functionality.
+ * The object of this class cannot be created directly, either create an object of HttpClient of HttpsClient class.
+ */
 public class Client
 {
 	private boolean suppressException;
 	private Socket socket;
-	private boolean keepConnectionOpen; // redirect is not implemented
-	private boolean followRedirect; // redirect is not implemented
+	private boolean keepConnectionOpen;
+	private boolean followRedirect;
 	private String method;
 	private String path;
 	private final Map<String, String> parameters;
@@ -35,29 +39,53 @@ public class Client
 		this.body = new byte[0];
 	}
 
+	/**
+	 * Setter method for socket object.
+	 * @param socket The socket that will be used for HTTP protocol
+	 */
 	protected void setSocket(Socket socket)
 	{
 		this.socket = socket;
 	}
 
+	/**
+	 * Setter method for flag to suppress any kind of exception.
+	 * @param suppressException The flag to suppress exceptions
+	 * @return The reference of the current object for chaining
+	 */
 	public Client suppressException(boolean suppressException)
 	{
 		this.suppressException = suppressException;
 		return this;
 	}
 
+	/**
+	 * Setter method for flag to keep the connection open for the socket.
+	 * @param keepConnectionOpen The flag whether to keep the connection open or close the socket
+	 * @return The reference of the current object for chaining
+	 */
 	public Client keepConnectionOpen(boolean keepConnectionOpen)
 	{
 		this.keepConnectionOpen = keepConnectionOpen;
 		return this;
 	}
 
+	/**
+	 * Setter method for flag to whether follow redirect HTTP response.
+	 * @param followRedirect The flag whether to make the next request depending on HTTP response
+	 * @return The reference of the current object for chaining
+	 */
 	public Client followRedirect(boolean followRedirect)
 	{
 		this.followRedirect = followRedirect;
 		return this;
 	}
 
+	/**
+	 * Setter method to set the HTTP Method.
+	 * @param method The HTTP method to be used
+	 * @return The reference of the current object for chaining
+	 */
 	public Client setMethod(String method)
 	{
 		if (method != null)
@@ -67,6 +95,11 @@ public class Client
 		return this;
 	}
 
+	/**
+	 * Setter method to set the path to be used after the host in url.
+	 * @param path The url path
+	 * @return The reference of the current object for chaining
+	 */
 	public Client setPath(String path)
 	{
 		if (path != null && !path.equals(""))
@@ -76,6 +109,12 @@ public class Client
 		return this;
 	}
 
+	/**
+	 * Setter method to add or modify a single parameter to the existing list of parameters.
+	 * @param key The parameter key
+	 * @param value The parameter value
+	 * @return The reference of the current object for chaining
+	 */
 	public Client addParameter(String key, String value)
 	{
 		if (key != null)
@@ -85,6 +124,11 @@ public class Client
 		return this;
 	}
 
+	/**
+	 * Setter method to add or modify multiple parameters to the existing list of parameters.
+	 * @param parameters The map of new or extra parameters that are to be added to the existing list of parameters
+	 * @return The reference of the current object for chaining
+	 */
 	public Client setParameters(Map<String, String> parameters)
 	{
 		if (parameters != null)
@@ -94,6 +138,12 @@ public class Client
 		return this;
 	}
 
+	/**
+	 * Setter method to add or modify a single header to the existing list of headers.
+	 * @param key The header name
+	 * @param value The header value
+	 * @return The reference of the current object for chaining
+	 */
 	public Client addHeader(String key, String value)
 	{
 		if (key != null)
@@ -103,6 +153,11 @@ public class Client
 		return this;
 	}
 
+	/**
+	 * Setter method add or modify multiple headers to the existing list of parameters.
+	 * @param headers The map of new or extra headers that are to be added to the existing list of headers
+	 * @return The reference of the current object for chaining
+	 */
 	public Client setHeader(Map<String, String> headers)
 	{
 		if (headers != null)
@@ -112,6 +167,11 @@ public class Client
 		return this;
 	}
 
+	/**
+	 * Setter method to set the request body
+	 * @param body Bytes array representing the request body
+	 * @return The reference of the current object for chaining
+	 */
 	public Client setBody(byte[] body)
 	{
 		if (body != null)
@@ -121,6 +181,11 @@ public class Client
 		return this;
 	}
 
+	/**
+	 * This method has to be called to make the HTTP request to the server after setting the required parameters
+	 * @return Response object that contains all the details of the HTTP response for this particular request
+	 * @throws IOException If any IOException occurs in the socket connection
+	 */
 	public Response request() throws IOException
 	{
 		// setting some string values
@@ -222,6 +287,10 @@ public class Client
 		}
 	}
 
+	/**
+	 * Closes the socket connection to the server
+	 * @throws IOException If any IOException occurs in the process of closing the connection
+	 */
 	public void close() throws IOException
 	{
 		if(socket!=null)
