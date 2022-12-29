@@ -58,13 +58,16 @@ publishing {
     }
     repositories {
         maven {
-            name = "OSSRH"
+            name = "Local"
             url = uri("${buildDir}/publishing-repository")
-//            url = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
-//            credentials {
-//                username = "${ossrhUsername}"
-//                password = "${ossrhPassword}"
-//            }
+        }
+        maven {
+            name = "OSSRH"
+            url = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
+            credentials {
+                username = "${ossrhUsername}"
+                password = "${ossrhPassword}"
+            }
         }
     }
 }
