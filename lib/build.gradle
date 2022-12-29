@@ -5,8 +5,8 @@ plugins {
 }
 
 group = 'io.github.parthappm'
-version = '1.0.0'
 archivesBaseName = "${rootProject.name}"
+version = '1.0.0'
 
 repositories {
     mavenCentral()
@@ -27,12 +27,12 @@ publishing {
     publications {
         maven (MavenPublication) {
             groupId = "${group}"
-            artifactId = "${rootProject.name}"
+            artifactId = "${archivesBaseName}"
             version = "${version}"
             from components.java
 
             pom {
-                name = "${group}:${rootProject.name}"
+                name = "${group}:${archivesBaseName}"
                 description = "A HTTP client implementation that can be used as a dependency in another project"
                 url = "https://github.com/ParthaPPM/http-client"
                 licenses {
