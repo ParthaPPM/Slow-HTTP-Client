@@ -298,8 +298,8 @@ public class Client
 		if(socket!=null)
 		{
 			socket.close();
+			socket = null;
 		}
-		socket = null;
 	}
 
 	private String readInputStream(InputStream is, char endChar) throws IOException
