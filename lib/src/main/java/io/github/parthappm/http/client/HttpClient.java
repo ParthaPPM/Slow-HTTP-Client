@@ -24,6 +24,7 @@ public class HttpClient extends Client
 	 */
 	public HttpClient(String host, int port)
 	{
+		super();
 		try
 		{
 			setSocket(new Socket(host, port));
