@@ -12,7 +12,7 @@ public class Main
 	public static void main(String[] args) throws IOException
 	{
 		System.out.println("API 1: GET using SimpleClient");
-		Response response1 = SimpleClient.get("").request();
+		Response response1 = SimpleClient.get("https://www.google.com").request();
 		System.out.println(response1.getStatusCode() + ": " + response1.getStatusText());
 		System.out.println(response1.getText());
 

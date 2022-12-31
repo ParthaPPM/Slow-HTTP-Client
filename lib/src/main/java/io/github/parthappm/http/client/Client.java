@@ -39,11 +39,7 @@ public class Client
 		this.body = new byte[0];
 	}
 
-	/**
-	 * Setter method for socket object.
-	 * @param socket The socket that will be used for HTTP protocol
-	 */
-	protected void setSocket(Socket socket)
+	void setSocket(Socket socket)
 	{
 		this.socket = socket;
 	}
