@@ -27,7 +27,7 @@ public class HttpsClient extends Client
 	 */
 	public HttpsClient(String host, int port)
 	{
-		super();
+		super(host);
 		try
 		{
 			SocketFactory socketFactory = SSLSocketFactory.getDefault();

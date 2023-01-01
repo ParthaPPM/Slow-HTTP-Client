@@ -5,6 +5,7 @@ import io.github.parthappm.http.client.SimpleClient;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.HashMap;
 
 public class Main
@@ -36,7 +37,7 @@ public class Main
 		System.out.println("API 5: POST using HttpsClient with all parameters");
 		Response response5 = new HttpsClient("ip address / host", 443)
 				.keepConnectionOpen(false)
-				.followRedirect(false)
+				.followRedirects(false)
 				.setMethod("POST")
 				.setPath("/")
 				.setParameters(new HashMap<>()) // to add all the parameters at once
@@ -44,7 +45,7 @@ public class Main
 				.setHeader(new HashMap<>()) // to all the headers at once
 				.addHeader("key", "value") // headers can be added one by one
 				.setBody(new byte[0])
-				.suppressException(false)
+				.connectionTimeout(Duration.ofSeconds(20))
 				.request();
 		System.out.println(response5.getVersion() + " " + response5.getStatusCode() + ": " + response5.getStatusText());
 		response5.getHeaders().forEach((String key, String value) -> System.out.println(key + ": " + value));

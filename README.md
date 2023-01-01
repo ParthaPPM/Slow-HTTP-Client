@@ -49,6 +49,6 @@ Response response = SimpleClient.request(method, url)
 		.setMethod("POST")
 		.setPath("/")
 		.setBody(new byte[0])
-		.suppressException(false)
+		.connectionTimeout(Duration.ofSeconds(10))
 		.request();
 ```

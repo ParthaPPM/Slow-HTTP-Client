@@ -6,6 +6,7 @@ import java.io.OutputStream;
 import java.net.Socket;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -17,42 +18,40 @@ import java.util.StringJoiner;
  */
 public class Client
 {
-	private boolean suppressException;
+	private final String VERSION;
 	private Socket socket;
 	private boolean keepConnectionOpen;
-	private boolean followRedirect;
+	private boolean followRedirects;
+	private int timeout;
 	private String method;
 	private String path;
 	private final Map<String, String> parameters;
 	private final Map<String, String> headers;
 	private byte[] body;
 
-	Client()
+	Client(String host)
 	{
-		this.suppressException = true;
+		this.VERSION = "HTTP/1.1";
 		this.keepConnectionOpen = false;
-		this.followRedirect = false;
+		this.followRedirects = false;
+		this.timeout = 30000; // 30 seconds
 		this.method = "GET";
 		this.path = "/";
 		this.parameters = new HashMap<>();
 		this.headers = new HashMap<>();
 		this.body = new byte[0];
+
+		// adding some default headers
+		headers.put("Host", host);
+		headers.put("User-Agent", "UserClient/1.0.0");
+		headers.put("Accept", "*/*");
+		headers.put("Accept-Encoding", "gzip, deflate, br");
+		headers.put("Connection", "keep-alive");
 	}
 
 	void setSocket(Socket socket)
 	{
 		this.socket = socket;
-	}
-
-	/**
-	 * Setter method for flag to suppress any kind of exception.
-	 * @param suppressException The flag to suppress exceptions
-	 * @return The reference of the current object for chaining
-	 */
-	public Client suppressException(boolean suppressException)
-	{
-		this.suppressException = suppressException;
-		return this;
 	}
 
 	/**
@@ -68,12 +67,23 @@ public class Client
 
 	/**
 	 * Setter method for flag to whether follow redirect HTTP response.
-	 * @param followRedirect The flag whether to make the next request depending on HTTP response
+	 * @param followRedirects The flag whether to make the next request depending on HTTP response
 	 * @return The reference of the current object for chaining
 	 */
-	public Client followRedirect(boolean followRedirect)
+	public Client followRedirects(boolean followRedirects)
 	{
-		this.followRedirect = followRedirect;
+		this.followRedirects = followRedirects;
+		return this;
+	}
+
+	/**
+	 * Setter method for socket timeout
+	 * @param duration The timeout time
+	 * @return The reference of the current object for chaining
+	 */
+	public Client connectionTimeout(Duration duration)
+	{
+		this.timeout = (int) duration.getSeconds() * 1000;
 		return this;
 	}
 
@@ -180,9 +190,8 @@ public class Client
 	/**
 	 * This method has to be called to make the HTTP request to the server after setting the required parameters
 	 * @return Response object that contains all the details of the HTTP response for this particular request
-	 * @throws IOException If any IOException occurs in the socket connection
 	 */
-	public Response request() throws IOException
+	public Response request()
 	{
 		// setting some string values
 		String LINE_SEPARATOR = "\r\n";
@@ -191,17 +200,15 @@ public class Client
 		String CONNECTION_KEEP_ALIVE = "keep-alive";
 		String CONNECTION_CLOSE = "close";
 		String CONNECTION_CLOSE_RESPONSE = "Closed";
-		String USER_AGENT = "User-Agent";
-		String userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.131 Safari/537.36 Edg/92.0.902.67";
 
 		// building the headers
 		headers.put(CONTENT_LENGTH, String.valueOf(body.length));
 		headers.put("Connection", keepConnectionOpen ? CONNECTION_KEEP_ALIVE : CONNECTION_CLOSE);
-		headers.put(USER_AGENT, userAgent);
 
 		try
 		{
 			// sending and receiving the data
+			socket.setSoTimeout(timeout);
 			OutputStream os = socket.getOutputStream();
 			InputStream is = socket.getInputStream();
 
@@ -278,14 +285,7 @@ public class Client
 		}
 		catch (Exception e)
 		{
-			if (!suppressException)
-			{
-				throw e;
-			}
-			else
-			{
-				return new Response();
-			}
+			return new Response();
 		}
 	}
 
@@ -323,7 +323,7 @@ public class Client
 		StringJoiner requestLine = new StringJoiner(" ");
 		requestLine.add(this.method);
 		requestLine.add(this.path + ((parametersAsString.length() == 0) ? "" : "?" + parametersAsString));
-		requestLine.add("HTTP/1.1");
+		requestLine.add(VERSION);
 		return requestLine.toString();
 	}
 
