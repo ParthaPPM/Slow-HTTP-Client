@@ -230,18 +230,26 @@ public class Client
 
 			// reading the response body
 			byte[] responseBody;
-			int bytesRead;
+			int bytesRead = 0;
 			String contentLength = responseHeaders.get(CONTENT_LENGTH);
 			if (contentLength != null)
 			{
 				int responseContentLength = Integer.parseInt(contentLength);
 				responseBody = new byte[responseContentLength];
-				bytesRead = is.read(responseBody, 0, responseContentLength);
+				try
+				{
+					do
+					{
+						int currentBytesRead = is.read(responseBody, bytesRead, responseContentLength);
+						bytesRead += currentBytesRead;
+
+					} while (bytesRead < responseContentLength);
+				}
+				catch (IOException ignored) {}
 			}
 			else
 			{
 				responseBody = new byte[0];
-				bytesRead = 0;
 			}
 
 			// reading the connection information
