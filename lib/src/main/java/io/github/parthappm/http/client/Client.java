@@ -20,8 +20,6 @@ public class Client
 {
 	private final String VERSION;
 	private Socket socket;
-	private boolean keepConnectionOpen; // not implemented
-	private boolean followRedirects; // not implemented
 	private int timeoutInMilliSeconds;
 	private String method;
 	private String path;
@@ -32,8 +30,6 @@ public class Client
 	Client(String host)
 	{
 		this.VERSION = "HTTP/1.1";
-		this.keepConnectionOpen = true;
-		this.followRedirects = false;
 		this.timeoutInMilliSeconds = 30000; // 30 seconds
 		this.method = "GET";
 		this.path = "/";
@@ -52,28 +48,6 @@ public class Client
 	void setSocket(Socket socket)
 	{
 		this.socket = socket;
-	}
-
-	/**
-	 * Setter method for flag to keep the connection open for the socket.
-	 * @param keepConnectionOpen The flag whether to keep the connection open or close the socket
-	 * @return The reference of the current object for chaining
-	 */
-	public Client keepConnectionOpen(boolean keepConnectionOpen)
-	{
-		this.keepConnectionOpen = keepConnectionOpen;
-		return this;
-	}
-
-	/**
-	 * Setter method for flag to whether follow redirect HTTP response.
-	 * @param followRedirects The flag whether to make the next request depending on HTTP response
-	 * @return The reference of the current object for chaining
-	 */
-	public Client followRedirects(boolean followRedirects)
-	{
-		this.followRedirects = followRedirects;
-		return this;
 	}
 
 	/**
@@ -274,9 +248,8 @@ public class Client
 			String connection = responseHeaders.get(CONNECTION);
 			if (connection != null && connection.equalsIgnoreCase(CONNECTION_CLOSE_RESPONSE))
 			{
-				keepConnectionOpen = false;
+				close();
 			}
-			close();
 
 			return new Response(version, statusCode, statusText, responseHeaders, Arrays.copyOfRange(responseBody, 0, bytesRead));
 		}
