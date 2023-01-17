@@ -6,8 +6,8 @@ This is a http client program which can be used with another program that requir
 
 [![Project License](https://img.shields.io/github/license/ParthaPPM/http-client)](https://github.com/ParthaPPM/http-client/blob/master/LICENSE)
 [![javadoc](https://javadoc.io/badge2/io.github.parthappm/http-client/javadoc.svg)](https://javadoc.io/doc/io.github.parthappm/http-client)
-[![POM](https://img.shields.io/maven-central/v/io.github.parthappm/http-client)](https://central.sonatype.dev/artifact/io.github.parthappm/http-client/1.0.0)
-[![Artifact JAR](https://javadoc.io/badge2/io.github.parthappm/http-client/JAR.svg)](https://repo1.maven.org/maven2/io/github/parthappm/http-client/1.0.0/http-client-1.0.0.jar)
+[![POM](https://img.shields.io/maven-central/v/io.github.parthappm/http-client)](https://central.sonatype.dev/artifact/io.github.parthappm/http-client/2.0.0)
+[![Artifact JAR](https://javadoc.io/badge2/io.github.parthappm/http-client/JAR.svg)](https://repo1.maven.org/maven2/io/github/parthappm/http-client/2.0.0/http-client-2.0.0.jar)
 
 ## How to use (Option 1):-
 1. Create an instance of `HttpClient` or `HttpsClient` class and assign it to `Client` class.
