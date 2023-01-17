@@ -14,15 +14,15 @@ import java.util.StringJoiner;
 
 /**
  * A client class to implement the HTTP client functionality.
- * The object of this class cannot be created directly, either create an object of HttpClient of HttpsClient class.
+ * The object of this class cannot be created directly, either create an object of HttpClient or HttpsClient class.
  */
 public class Client
 {
 	private final String VERSION;
 	private Socket socket;
-	private boolean keepConnectionOpen;
-	private boolean followRedirects;
-	private int timeout;
+	private boolean keepConnectionOpen; // not implemented
+	private boolean followRedirects; // not implemented
+	private int timeoutInMilliSeconds;
 	private String method;
 	private String path;
 	private final Map<String, String> parameters;
@@ -32,9 +32,9 @@ public class Client
 	Client(String host)
 	{
 		this.VERSION = "HTTP/1.1";
-		this.keepConnectionOpen = false;
+		this.keepConnectionOpen = true;
 		this.followRedirects = false;
-		this.timeout = 30000; // 30 seconds
+		this.timeoutInMilliSeconds = 30000; // 30 seconds
 		this.method = "GET";
 		this.path = "/";
 		this.parameters = new HashMap<>();
@@ -83,7 +83,7 @@ public class Client
 	 */
 	public Client connectionTimeout(Duration duration)
 	{
-		this.timeout = (int) duration.getSeconds() * 1000;
+		this.timeoutInMilliSeconds = (int) duration.toMillis();
 		return this;
 	}
 
@@ -197,18 +197,15 @@ public class Client
 		String LINE_SEPARATOR = "\r\n";
 		String CONTENT_LENGTH = "Content-Length";
 		String CONNECTION = "Connection";
-		String CONNECTION_KEEP_ALIVE = "keep-alive";
-		String CONNECTION_CLOSE = "close";
 		String CONNECTION_CLOSE_RESPONSE = "Closed";
 
 		// building the headers
 		headers.put(CONTENT_LENGTH, String.valueOf(body.length));
-		headers.put("Connection", keepConnectionOpen ? CONNECTION_KEEP_ALIVE : CONNECTION_CLOSE);
 
 		try
 		{
 			// sending and receiving the data
-			socket.setSoTimeout(timeout);
+			socket.setSoTimeout(timeoutInMilliSeconds);
 			OutputStream os = socket.getOutputStream();
 			InputStream is = socket.getInputStream();
 
