@@ -1,7 +1,9 @@
 package io.github.parthappm.http.client;
 
-import java.nio.charset.StandardCharsets;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.util.Map;
+import java.util.zip.GZIPInputStream;
 
 /**
  * The Response class contains all the data related to HTTP response returned by the server
@@ -79,6 +81,27 @@ public class Response
 	 */
 	public String getText()
 	{
-		return new String(body, StandardCharsets.UTF_8);
+		String contentTypeHeader = headers.get("Content-Type");
+		String[] directives = contentTypeHeader.split(";");
+		String charset = directives.length >= 2 ? directives[1].substring(directives[1].indexOf("=")+1).trim() : "UTF-8";
+		try
+		{
+			String contentEncoding = headers.get("Content-Encoding");
+			if (contentEncoding != null && contentEncoding.equalsIgnoreCase("gzip"))
+			{
+				GZIPInputStream gzip = new GZIPInputStream(new ByteArrayInputStream(body));
+				String responseBody = new String(gzip.readAllBytes());
+				gzip.close();
+				return responseBody;
+			}
+			else
+			{
+				return new String(body, charset);
+			}
+		}
+		catch (IOException e)
+		{
+			return null;
+		}
 	}
 }
